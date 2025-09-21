@@ -1,0 +1,30 @@
+name: Deploy Flask App to EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when pushing to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.1
+      with:
+        ssh-private-key: ${{ secrets.GITHUB_ACTIONS_KEY }}
+
+    - name: Copy files to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@56.155.115.126 "mkdir -p ~/myapp"
+        scp -o StrictHostKeyChecking=no -r * ubuntu@56.155.115.126:~/myapp/
+
+    - name: Restart Flask app on EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@56.155.115.126 "sudo systemctl restart flaskapp"
+
+
